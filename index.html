@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
@@ -1136,6 +1135,132 @@
             margin-top: 15px;
         }
 
+        /* ========================================
+           ESTILOS RESPONSIVE PORTAL DE CLIENTES
+           ======================================== */
+        
+        /* Tablets y móviles */
+        @media (max-width: 768px) {
+            #clientPortal .header h1 {
+                font-size: 1.5em;
+            }
+            
+            #clientPortal .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            #clientPortal .header-logo {
+                width: 80px;
+            }
+            
+            #clientPortal .tabs {
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+            
+            #clientPortal .tab-btn {
+                padding: 10px 15px !important;
+                font-size: 0.9em !important;
+                flex: 1 1 45%;
+            }
+            
+            #clientPortal .container {
+                padding: 10px;
+            }
+            
+            #clientPortal .product-card {
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+                text-align: center;
+            }
+            
+            #clientPortal .product-card > div {
+                text-align: center !important;
+            }
+            
+            #clientPortal .product-card .btn {
+                width: 100%;
+                padding: 15px !important;
+                font-size: 1.1em !important;
+            }
+            
+            #clientPortal .search-box {
+                font-size: 16px !important; /* Evita zoom en iOS */
+            }
+            
+            #clientPortal #cartItems .product-card {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        
+        /* Móviles pequeños */
+        @media (max-width: 480px) {
+            #clientPortal {
+                padding: 10px;
+            }
+            
+            #clientPortal .header {
+                padding: 15px;
+            }
+            
+            #clientPortal .header h1 {
+                font-size: 1.2em;
+            }
+            
+            #clientPortal .header p {
+                font-size: 0.9em;
+            }
+            
+            #clientPortal .tab-btn {
+                padding: 8px 10px !important;
+                font-size: 0.8em !important;
+            }
+            
+            #clientPortal h2 {
+                font-size: 1.3em;
+            }
+            
+            #clientPortal .product-card {
+                padding: 12px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            #clientPortal .product-card strong {
+                font-size: 1em !important;
+            }
+            
+            #clientPortal .product-card .btn {
+                padding: 12px !important;
+                font-size: 1em !important;
+            }
+            
+            #clientPortal .btn-success,
+            #clientPortal .btn-warning {
+                padding: 15px 20px !important;
+                font-size: 1em !important;
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            
+            #clientPortal .alert {
+                padding: 12px;
+                font-size: 0.9em;
+            }
+            
+            /* Precio más grande en móvil */
+            #clientPortal .product-card div[style*="color: #4caf50"] {
+                font-size: 1.4em !important;
+            }
+            
+            /* Badge de bulto */
+            #clientPortal .product-card span[style*="background: #ff9800"] {
+                display: block;
+                margin-top: 5px;
+                margin-left: 0 !important;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -2210,9 +2335,17 @@
             <div class="alert alert-success" style="margin-top: 30px;">
                 <strong>📲 Compartir credenciales con el cliente:</strong><br>
                 Una vez registrado el cliente, podés enviarle sus credenciales por WhatsApp o Email junto con el link:<br>
-                <code style="background: white; padding: 5px 10px; border-radius: 5px; display: inline-block; margin-top: 8px;">
-                    [Agregar URL del sistema aquí]
-                </code>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                    <code id="systemUrl" style="background: white; padding: 8px 15px; border-radius: 5px; flex: 1;">
+                        https://bruzzonedistribuidora.github.io/bruzzonedistribuidora
+                    </code>
+                    <button class="btn btn-primary" onclick="copySystemUrl()" style="padding: 8px 15px;">
+                        📋 Copiar
+                    </button>
+                    <a href="https://wa.me/?text=Hola! Te comparto el acceso al catálogo de BRUZZONE DISTRIBUIDORA: https://bruzzonedistribuidora.github.io/bruzzonedistribuidora" target="_blank" class="btn btn-success" style="padding: 8px 15px; text-decoration: none;">
+                        📱 WhatsApp
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -6333,6 +6466,22 @@ function exportOrderToPDF() {
             document.getElementById('newClientAddress').value = '';
 
             alert(`✅ Cliente registrado exitosamente\n\nNombre: ${name}\nUsuario: ${username}\nContraseña: ${password}\n\n¡Compartí estas credenciales con el cliente!`);
+        }
+
+        function copySystemUrl() {
+            const url = 'https://bruzzonedistribuidora.github.io/bruzzonedistribuidora';
+            navigator.clipboard.writeText(url).then(() => {
+                alert('✅ URL copiada al portapapeles');
+            }).catch(() => {
+                // Fallback para navegadores que no soportan clipboard
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('✅ URL copiada al portapapeles');
+            });
         }
 
         function updateClientsTable() {
