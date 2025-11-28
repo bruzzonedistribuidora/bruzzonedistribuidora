@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
@@ -1572,6 +1571,7 @@
             <button class="tab" onclick="switchTab(&#39;catalog&#39;, event)" style="display: block;">📋 Catálogo</button>
             <button class="tab" onclick="switchTab(&#39;visual-catalog&#39;, event)" style="display: block;">📸 Catálogo Visual</button>
             <button class="tab" onclick="switchTab(&#39;orders&#39;, event)" style="display: block;">📝 Pedidos</button>
+            <button class="tab" onclick="switchTab(&#39;factory-orders&#39;, event)" style="display: block;">🏭 Pedidos a Fábrica</button>
             <button class="tab" onclick="switchTab(&#39;sellers&#39;, event)" style="display: block;">👥 Vendedores</button>
             <button class="tab" onclick="switchTab(&#39;clients&#39;, event)" style="display: block;">🛒 Clientes</button>
             <button class="tab" onclick="switchTab(&#39;banners&#39;, event)" style="display: block;">📢 Publicidades</button>
@@ -2363,6 +2363,220 @@
                         </thead>
                         <tbody id="ordersTableBody"><tr><td colspan="8" style="text-align: center; padding: 40px; color: #999;">No hay pedidos registrados.</td></tr></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA PEDIDOS A FÁBRICA -->
+        <div id="factory-orders" class="tab-content">
+            <h2 style="margin-bottom: 20px;">🏭 Pedidos a Fábrica / Proveedores</h2>
+            
+            <div class="alert alert-info" style="margin-bottom: 25px;">
+                <strong>💡 ¿Cómo funciona?</strong><br>
+                Gestioná tus pedidos a proveedores: controlá stock, creá pedidos, seguí el estado y compará lo pedido vs lo recibido.
+            </div>
+
+            <!-- ESTADÍSTICAS RÁPIDAS -->
+            <div class="stats" style="margin-bottom: 25px;">
+                <div class="stat-card" style="display: block; background: #fff3e0;">
+                    <h3 id="factoryOrdersPending" style="color: #ff9800;">0</h3>
+                    <p>Pedidos Pendientes</p>
+                </div>
+                <div class="stat-card" style="display: block; background: #e3f2fd;">
+                    <h3 id="factoryOrdersSent" style="color: #2196f3;">0</h3>
+                    <p>Enviados</p>
+                </div>
+                <div class="stat-card" style="display: block; background: #e8f5e9;">
+                    <h3 id="factoryOrdersReceived" style="color: #4caf50;">0</h3>
+                    <p>Recibidos</p>
+                </div>
+                <div class="stat-card" style="display: block; background: #ffebee;">
+                    <h3 id="lowStockCount" style="color: #f44336;">0</h3>
+                    <p>Productos Stock Bajo</p>
+                </div>
+            </div>
+
+            <!-- TABS INTERNOS -->
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="showFactoryTab('new-order')" id="btnNewOrder">➕ Nuevo Pedido</button>
+                <button class="btn btn-secondary" onclick="showFactoryTab('stock-control')" id="btnStockControl">📦 Control de Stock</button>
+                <button class="btn btn-secondary" onclick="showFactoryTab('order-history')" id="btnOrderHistory">📋 Historial de Pedidos</button>
+                <button class="btn btn-secondary" onclick="showFactoryTab('low-stock')" id="btnLowStock">⚠️ Stock Bajo</button>
+            </div>
+
+            <!-- NUEVO PEDIDO -->
+            <div id="factory-new-order" class="factory-tab-content">
+                <div class="config-panel">
+                    <div class="config-group">
+                        <h3>📝 Crear Pedido a Proveedor</h3>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div class="input-group">
+                                <label>Proveedor *</label>
+                                <select id="factoryOrderSupplier" onchange="loadSupplierProducts()">
+                                    <option value="">-- Seleccionar Proveedor --</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Fecha del Pedido</label>
+                                <input type="date" id="factoryOrderDate" value="">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Notas / Observaciones</label>
+                            <textarea id="factoryOrderNotes" placeholder="Ej: Urgente, enviar por transporte X, etc." style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; min-height: 60px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUCTOS DEL PROVEEDOR -->
+                <div id="supplierProductsContainer" style="display: none; margin-top: 20px;">
+                    <div class="config-panel">
+                        <div class="config-group">
+                            <h3>📦 Productos de <span id="selectedSupplierName"></span></h3>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <input type="text" id="factoryProductSearch" placeholder="🔍 Buscar producto..." class="search-box" onkeyup="filterFactoryProducts()" style="width: 100%; max-width: 400px;">
+                            </div>
+                            
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Descripción</th>
+                                            <th>Stock Actual</th>
+                                            <th>Stock Mín.</th>
+                                            <th>Precio Lista</th>
+                                            <th>Cantidad a Pedir</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="factoryProductsBody"></tbody>
+                                </table>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>Total del Pedido:</strong>
+                                    <span id="factoryOrderTotal" style="font-size: 1.5em; color: #4caf50; margin-left: 10px;">$0.00</span>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-success" onclick="saveFactoryOrder()">💾 Guardar Pedido</button>
+                                    <button class="btn btn-primary" onclick="sendFactoryOrderWhatsApp()">📱 Enviar por WhatsApp</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROL DE STOCK -->
+            <div id="factory-stock-control" class="factory-tab-content" style="display: none;">
+                <div class="config-panel">
+                    <div class="config-group">
+                        <h3>📦 Control de Stock</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Configurá el stock actual y mínimo de cada producto para recibir alertas.</p>
+                        
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <select id="stockSupplierFilter" onchange="filterStockBySupplier()" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                <option value="">Todos los Proveedores</option>
+                            </select>
+                            <input type="text" id="stockProductSearch" placeholder="🔍 Buscar producto..." class="search-box" onkeyup="filterStockProducts()" style="flex: 1; min-width: 200px;">
+                        </div>
+                        
+                        <div style="max-height: 500px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descripción</th>
+                                        <th>Proveedor</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockControlBody"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-success" onclick="saveAllStock()">💾 Guardar Cambios de Stock</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HISTORIAL DE PEDIDOS -->
+            <div id="factory-order-history" class="factory-tab-content" style="display: none;">
+                <div class="config-panel">
+                    <div class="config-group">
+                        <h3>📋 Historial de Pedidos a Proveedores</h3>
+                        
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <select id="historySupplierFilter" onchange="filterOrderHistory()" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                <option value="">Todos los Proveedores</option>
+                            </select>
+                            <select id="historyStatusFilter" onchange="filterOrderHistory()" style="padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0;">
+                                <option value="">Todos los Estados</option>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="enviado">Enviado</option>
+                                <option value="recibido">Recibido</option>
+                                <option value="parcial">Recibido Parcial</option>
+                            </select>
+                        </div>
+                        
+                        <div style="max-height: 500px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nº Pedido</th>
+                                        <th>Fecha</th>
+                                        <th>Proveedor</th>
+                                        <th>Productos</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="factoryOrdersHistoryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STOCK BAJO -->
+            <div id="factory-low-stock" class="factory-tab-content" style="display: none;">
+                <div class="config-panel">
+                    <div class="config-group">
+                        <h3>⚠️ Productos con Stock Bajo</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Productos que están por debajo del stock mínimo configurado.</p>
+                        
+                        <div style="max-height: 500px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Descripción</th>
+                                        <th>Proveedor</th>
+                                        <th>Stock Actual</th>
+                                        <th>Stock Mínimo</th>
+                                        <th>Faltan</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lowStockBody"></tbody>
+                            </table>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-warning" onclick="generateLowStockOrders()">📝 Generar Pedidos para Stock Bajo</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3176,6 +3390,18 @@
                     updatedAt: new Date().toISOString()
                 });
                 
+                // Guardar pedidos a fábrica
+                await db.collection('config').doc('factoryOrders').set({
+                    data: factoryOrdersData,
+                    updatedAt: new Date().toISOString()
+                });
+                
+                // Guardar datos de stock
+                await db.collection('config').doc('stock').set({
+                    data: stockData,
+                    updatedAt: new Date().toISOString()
+                });
+                
                 console.log('✅ Datos guardados en Firebase');
             } catch (error) {
                 console.error('❌ Error guardando en Firebase:', error);
@@ -3259,6 +3485,20 @@
                     console.log('✅ Publicidades cargadas desde Firebase:', announcementsData.length);
                 }
                 
+                // Cargar pedidos a fábrica
+                const factoryOrdersDoc = await db.collection('config').doc('factoryOrders').get();
+                if (factoryOrdersDoc.exists && factoryOrdersDoc.data().data) {
+                    factoryOrdersData = factoryOrdersDoc.data().data;
+                    console.log('✅ Pedidos a fábrica cargados desde Firebase:', factoryOrdersData.length);
+                }
+                
+                // Cargar datos de stock
+                const stockDoc = await db.collection('config').doc('stock').get();
+                if (stockDoc.exists && stockDoc.data().data) {
+                    stockData = stockDoc.data().data;
+                    console.log('✅ Stock cargado desde Firebase');
+                }
+                
                 console.log('✅ Todos los datos cargados desde Firebase');
                 return true;
             } catch (error) {
@@ -3283,6 +3523,9 @@
         let productsData = [];
         let suppliersData = [];
         let ordersData = [];
+        let factoryOrdersData = []; // Pedidos a fábrica/proveedores
+        let stockData = {}; // Stock actual y mínimo por producto
+        let currentFactoryOrder = { items: [], supplier: '', notes: '' }; // Pedido actual a fábrica
         let columnTemplates = {};
         let currentFileData = null;
         let currentFileHeaders = [];
@@ -5410,6 +5653,12 @@ function updateExportProductCount() {
             if (tabName === 'catalog') {
                 updateCatalog();
             }
+            
+            // Cargar pedidos a fábrica
+            if (tabName === 'factory-orders') {
+                showFactoryTab('new-order');
+                updateFactoryStats();
+            }
         }
 	function getFilteredProductsForExport() {
     const brandFilter = document.getElementById('exportFilterBrand').value;
@@ -6136,7 +6385,13 @@ function exportOrderToPDF() {
                 suppliersData,
                 productsData,
                 ordersData,
-                columnTemplates
+                columnTemplates,
+                clientsData,
+                users,
+                companyData,
+                announcementsData,
+                factoryOrdersData,
+                stockData
             };
 
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -6167,6 +6422,9 @@ function exportOrderToPDF() {
                     ordersData = backup.ordersData || [];
                     clientsData = backup.clientsData || [];
                     columnTemplates = backup.columnTemplates || {};
+                    factoryOrdersData = backup.factoryOrdersData || [];
+                    stockData = backup.stockData || {};
+                    announcementsData = backup.announcementsData || [];
                     
                     // Restaurar usuarios si existen
                     if (backup.users) {
@@ -8025,6 +8283,593 @@ function exportOrderToPDF() {
             
             if (bannersSection) bannersSection.innerHTML = bannersHTML;
             if (offersContainer) offersContainer.innerHTML = bannersHTML;
+        }
+
+        // =============================================
+        // FUNCIONES DE PEDIDOS A FÁBRICA / PROVEEDORES
+        // =============================================
+        
+        function showFactoryTab(tabName) {
+            // Ocultar todos los tabs
+            document.querySelectorAll('.factory-tab-content').forEach(tab => tab.style.display = 'none');
+            
+            // Resetear botones
+            document.querySelectorAll('#factory-orders .btn').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            
+            // Mostrar tab seleccionado
+            const tab = document.getElementById('factory-' + tabName);
+            if (tab) tab.style.display = 'block';
+            
+            // Activar botón correspondiente
+            const btnMap = {
+                'new-order': 'btnNewOrder',
+                'stock-control': 'btnStockControl',
+                'order-history': 'btnOrderHistory',
+                'low-stock': 'btnLowStock'
+            };
+            const activeBtn = document.getElementById(btnMap[tabName]);
+            if (activeBtn) {
+                activeBtn.classList.remove('btn-secondary');
+                activeBtn.classList.add('btn-primary');
+            }
+            
+            // Cargar datos según la pestaña
+            if (tabName === 'new-order') {
+                loadFactorySuppliers();
+                document.getElementById('factoryOrderDate').value = new Date().toISOString().split('T')[0];
+            } else if (tabName === 'stock-control') {
+                loadStockControl();
+            } else if (tabName === 'order-history') {
+                loadFactoryOrderHistory();
+            } else if (tabName === 'low-stock') {
+                loadLowStockProducts();
+            }
+        }
+        
+        function loadFactorySuppliers() {
+            const select = document.getElementById('factoryOrderSupplier');
+            const historyFilter = document.getElementById('historySupplierFilter');
+            const stockFilter = document.getElementById('stockSupplierFilter');
+            
+            const options = '<option value="">-- Seleccionar Proveedor --</option>' + 
+                suppliersData.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            
+            if (select) select.innerHTML = options;
+            if (historyFilter) historyFilter.innerHTML = '<option value="">Todos los Proveedores</option>' + 
+                suppliersData.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            if (stockFilter) stockFilter.innerHTML = '<option value="">Todos los Proveedores</option>' + 
+                suppliersData.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+        }
+        
+        function loadSupplierProducts() {
+            const supplier = document.getElementById('factoryOrderSupplier').value;
+            const container = document.getElementById('supplierProductsContainer');
+            const tbody = document.getElementById('factoryProductsBody');
+            const nameSpan = document.getElementById('selectedSupplierName');
+            
+            if (!supplier) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            nameSpan.textContent = supplier;
+            currentFactoryOrder = { items: [], supplier: supplier, notes: '' };
+            
+            const products = productsData.filter(p => p.supplier === supplier);
+            
+            tbody.innerHTML = products.map(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                const basePrice = p.basePrice || p.purchasePrice || 0;
+                const stockClass = stock.current <= stock.minimum ? 'color: #f44336; font-weight: bold;' : '';
+                
+                return `
+                    <tr>
+                        <td><strong>${p.code}</strong></td>
+                        <td>${p.description}</td>
+                        <td style="${stockClass}">${stock.current}</td>
+                        <td>${stock.minimum}</td>
+                        <td>$${parseFloat(basePrice).toFixed(2)}</td>
+                        <td>
+                            <input type="number" min="0" value="0" 
+                                   id="qty-${p.code}" 
+                                   onchange="updateFactoryOrderItem('${p.code}', this.value, ${basePrice})"
+                                   style="width: 80px; padding: 8px; border-radius: 5px; border: 2px solid #e0e0e0; text-align: center;">
+                        </td>
+                        <td id="subtotal-${p.code}">$0.00</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 20px; color: #999;">No hay productos para este proveedor</td></tr>';
+            }
+            
+            updateFactoryOrderTotal();
+        }
+        
+        function updateFactoryOrderItem(code, qty, price) {
+            const quantity = parseInt(qty) || 0;
+            const subtotal = quantity * price;
+            
+            document.getElementById(`subtotal-${code}`).textContent = '$' + subtotal.toFixed(2);
+            
+            // Actualizar item en el pedido
+            const existingIndex = currentFactoryOrder.items.findIndex(i => i.code === code);
+            if (quantity > 0) {
+                const product = productsData.find(p => p.code === code);
+                const item = {
+                    code: code,
+                    description: product ? product.description : '',
+                    quantity: quantity,
+                    price: price,
+                    subtotal: subtotal
+                };
+                if (existingIndex >= 0) {
+                    currentFactoryOrder.items[existingIndex] = item;
+                } else {
+                    currentFactoryOrder.items.push(item);
+                }
+            } else if (existingIndex >= 0) {
+                currentFactoryOrder.items.splice(existingIndex, 1);
+            }
+            
+            updateFactoryOrderTotal();
+        }
+        
+        function updateFactoryOrderTotal() {
+            const total = currentFactoryOrder.items.reduce((sum, item) => sum + item.subtotal, 0);
+            document.getElementById('factoryOrderTotal').textContent = '$' + total.toFixed(2);
+        }
+        
+        function filterFactoryProducts() {
+            const search = document.getElementById('factoryProductSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#factoryProductsBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+        
+        function saveFactoryOrder() {
+            if (!currentFactoryOrder.supplier) {
+                alert('❌ Seleccioná un proveedor');
+                return;
+            }
+            
+            if (currentFactoryOrder.items.length === 0) {
+                alert('❌ Agregá al menos un producto al pedido');
+                return;
+            }
+            
+            const order = {
+                id: 'PF-' + Date.now(),
+                supplier: currentFactoryOrder.supplier,
+                items: [...currentFactoryOrder.items],
+                total: currentFactoryOrder.items.reduce((sum, i) => sum + i.subtotal, 0),
+                notes: document.getElementById('factoryOrderNotes').value,
+                date: document.getElementById('factoryOrderDate').value,
+                status: 'pendiente',
+                createdAt: new Date().toISOString(),
+                receivedItems: [] // Para control de recepción
+            };
+            
+            factoryOrdersData.push(order);
+            saveToFirebase();
+            
+            alert(`✅ Pedido ${order.id} guardado correctamente\n\nProveedor: ${order.supplier}\nProductos: ${order.items.length}\nTotal: $${order.total.toFixed(2)}`);
+            
+            // Limpiar formulario
+            document.getElementById('factoryOrderSupplier').value = '';
+            document.getElementById('factoryOrderNotes').value = '';
+            document.getElementById('supplierProductsContainer').style.display = 'none';
+            currentFactoryOrder = { items: [], supplier: '', notes: '' };
+            
+            updateFactoryStats();
+        }
+        
+        function sendFactoryOrderWhatsApp() {
+            if (!currentFactoryOrder.supplier || currentFactoryOrder.items.length === 0) {
+                alert('❌ Primero completá el pedido');
+                return;
+            }
+            
+            const supplier = suppliersData.find(s => s.name === currentFactoryOrder.supplier);
+            const phone = supplier && supplier.phone ? supplier.phone.replace(/\D/g, '') : '';
+            
+            let message = `*PEDIDO - ${companyData.name || 'BRUZZONE DISTRIBUIDORA'}*\n\n`;
+            message += `📅 Fecha: ${document.getElementById('factoryOrderDate').value}\n`;
+            message += `🏭 Proveedor: ${currentFactoryOrder.supplier}\n\n`;
+            message += `*PRODUCTOS:*\n`;
+            
+            currentFactoryOrder.items.forEach(item => {
+                message += `• ${item.code} - ${item.description}\n`;
+                message += `  Cantidad: ${item.quantity} | $${item.subtotal.toFixed(2)}\n`;
+            });
+            
+            const total = currentFactoryOrder.items.reduce((sum, i) => sum + i.subtotal, 0);
+            message += `\n*TOTAL: $${total.toFixed(2)}*\n`;
+            
+            const notes = document.getElementById('factoryOrderNotes').value;
+            if (notes) message += `\n📝 Notas: ${notes}`;
+            
+            const url = phone 
+                ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+                : `https://wa.me/?text=${encodeURIComponent(message)}`;
+            
+            window.open(url, '_blank');
+        }
+        
+        function loadStockControl() {
+            const tbody = document.getElementById('stockControlBody');
+            loadFactorySuppliers();
+            
+            tbody.innerHTML = productsData.map(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                const status = stock.current <= stock.minimum 
+                    ? '<span style="background: #f44336; color: white; padding: 4px 10px; border-radius: 10px;">⚠️ Bajo</span>'
+                    : '<span style="background: #4caf50; color: white; padding: 4px 10px; border-radius: 10px;">✅ OK</span>';
+                
+                return `
+                    <tr data-supplier="${p.supplier}" data-search="${p.code} ${p.description}".toLowerCase()>
+                        <td><strong>${p.code}</strong></td>
+                        <td>${p.description}</td>
+                        <td><span class="supplier-badge">${p.supplier}</span></td>
+                        <td>
+                            <input type="number" min="0" value="${stock.current}" 
+                                   id="stock-current-${p.code}"
+                                   style="width: 70px; padding: 5px; border-radius: 5px; border: 2px solid #e0e0e0; text-align: center;">
+                        </td>
+                        <td>
+                            <input type="number" min="0" value="${stock.minimum}" 
+                                   id="stock-min-${p.code}"
+                                   style="width: 70px; padding: 5px; border-radius: 5px; border: 2px solid #e0e0e0; text-align: center;">
+                        </td>
+                        <td>${status}</td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="saveProductStock('${p.code}')">💾</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function saveProductStock(code) {
+            const current = parseInt(document.getElementById(`stock-current-${code}`).value) || 0;
+            const minimum = parseInt(document.getElementById(`stock-min-${code}`).value) || 0;
+            
+            stockData[code] = { current, minimum };
+            saveToFirebase();
+            
+            loadStockControl();
+            updateFactoryStats();
+        }
+        
+        function saveAllStock() {
+            productsData.forEach(p => {
+                const currentEl = document.getElementById(`stock-current-${p.code}`);
+                const minEl = document.getElementById(`stock-min-${p.code}`);
+                
+                if (currentEl && minEl) {
+                    stockData[p.code] = {
+                        current: parseInt(currentEl.value) || 0,
+                        minimum: parseInt(minEl.value) || 0
+                    };
+                }
+            });
+            
+            saveToFirebase();
+            alert('✅ Stock guardado correctamente');
+            loadStockControl();
+            updateFactoryStats();
+        }
+        
+        function filterStockBySupplier() {
+            const supplier = document.getElementById('stockSupplierFilter').value;
+            const rows = document.querySelectorAll('#stockControlBody tr');
+            
+            rows.forEach(row => {
+                if (!supplier || row.dataset.supplier === supplier) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        function filterStockProducts() {
+            const search = document.getElementById('stockProductSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#stockControlBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+        
+        function loadFactoryOrderHistory() {
+            const tbody = document.getElementById('factoryOrdersHistoryBody');
+            loadFactorySuppliers();
+            
+            if (factoryOrdersData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #999;">No hay pedidos registrados</td></tr>';
+                return;
+            }
+            
+            const statusColors = {
+                pendiente: { bg: '#fff3e0', color: '#ff9800', text: 'Pendiente' },
+                enviado: { bg: '#e3f2fd', color: '#2196f3', text: 'Enviado' },
+                recibido: { bg: '#e8f5e9', color: '#4caf50', text: 'Recibido' },
+                parcial: { bg: '#fff3e0', color: '#ff9800', text: 'Parcial' }
+            };
+            
+            tbody.innerHTML = factoryOrdersData.slice().reverse().map(order => {
+                const status = statusColors[order.status] || statusColors.pendiente;
+                const fecha = new Date(order.date || order.createdAt).toLocaleDateString('es-AR');
+                
+                return `
+                    <tr data-supplier="${order.supplier}" data-status="${order.status}">
+                        <td><strong>${order.id}</strong></td>
+                        <td>${fecha}</td>
+                        <td><span class="supplier-badge">${order.supplier}</span></td>
+                        <td>${order.items.length} productos</td>
+                        <td><strong>$${order.total.toFixed(2)}</strong></td>
+                        <td>
+                            <span style="background: ${status.bg}; color: ${status.color}; padding: 5px 12px; border-radius: 15px; font-weight: 600;">
+                                ${status.text}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="viewFactoryOrder('${order.id}')" title="Ver detalle">👁️</button>
+                            ${order.status === 'pendiente' ? `<button class="btn btn-success btn-small" onclick="markOrderSent('${order.id}')" title="Marcar enviado">📤</button>` : ''}
+                            ${order.status === 'enviado' ? `<button class="btn btn-success btn-small" onclick="receiveOrder('${order.id}')" title="Recibir pedido">📦</button>` : ''}
+                            <button class="btn btn-danger btn-small" onclick="deleteFactoryOrder('${order.id}')" title="Eliminar">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function filterOrderHistory() {
+            const supplier = document.getElementById('historySupplierFilter').value;
+            const status = document.getElementById('historyStatusFilter').value;
+            const rows = document.querySelectorAll('#factoryOrdersHistoryBody tr');
+            
+            rows.forEach(row => {
+                const matchSupplier = !supplier || row.dataset.supplier === supplier;
+                const matchStatus = !status || row.dataset.status === status;
+                row.style.display = matchSupplier && matchStatus ? '' : 'none';
+            });
+        }
+        
+        function viewFactoryOrder(orderId) {
+            const order = factoryOrdersData.find(o => o.id === orderId);
+            if (!order) return;
+            
+            let details = `📋 PEDIDO ${order.id}\n\n`;
+            details += `📅 Fecha: ${new Date(order.date || order.createdAt).toLocaleDateString('es-AR')}\n`;
+            details += `🏭 Proveedor: ${order.supplier}\n`;
+            details += `📊 Estado: ${order.status.toUpperCase()}\n\n`;
+            details += `PRODUCTOS:\n`;
+            
+            order.items.forEach(item => {
+                const received = order.receivedItems?.find(r => r.code === item.code);
+                const receivedQty = received ? received.quantity : 0;
+                details += `• ${item.code} - ${item.description}\n`;
+                details += `  Pedido: ${item.quantity} | Recibido: ${receivedQty} | $${item.subtotal.toFixed(2)}\n`;
+            });
+            
+            details += `\nTOTAL: $${order.total.toFixed(2)}`;
+            if (order.notes) details += `\n\n📝 Notas: ${order.notes}`;
+            
+            alert(details);
+        }
+        
+        function markOrderSent(orderId) {
+            const order = factoryOrdersData.find(o => o.id === orderId);
+            if (!order) return;
+            
+            if (confirm(`¿Marcar pedido ${orderId} como ENVIADO?`)) {
+                order.status = 'enviado';
+                order.sentAt = new Date().toISOString();
+                saveToFirebase();
+                loadFactoryOrderHistory();
+                updateFactoryStats();
+            }
+        }
+        
+        function receiveOrder(orderId) {
+            const order = factoryOrdersData.find(o => o.id === orderId);
+            if (!order) return;
+            
+            let html = `<h3>📦 Recibir Pedido ${orderId}</h3>`;
+            html += `<p>Ingresá la cantidad recibida de cada producto:</p>`;
+            html += `<div style="max-height: 300px; overflow-y: auto;">`;
+            
+            order.items.forEach(item => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
+                        <div>
+                            <strong>${item.code}</strong> - ${item.description}<br>
+                            <small>Pedido: ${item.quantity}</small>
+                        </div>
+                        <input type="number" min="0" max="${item.quantity}" value="${item.quantity}" 
+                               id="receive-${item.code}" 
+                               style="width: 80px; padding: 8px; border-radius: 5px; border: 2px solid #e0e0e0;">
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            
+            // Crear modal simple
+            const modal = document.createElement('div');
+            modal.id = 'receiveModal';
+            modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 10000;';
+            modal.innerHTML = `
+                <div style="background: white; padding: 25px; border-radius: 15px; max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    ${html}
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-success" onclick="confirmReceiveOrder('${orderId}')" style="flex: 1;">✅ Confirmar Recepción</button>
+                        <button class="btn btn-danger" onclick="document.getElementById('receiveModal').remove()" style="flex: 1;">❌ Cancelar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        function confirmReceiveOrder(orderId) {
+            const order = factoryOrdersData.find(o => o.id === orderId);
+            if (!order) return;
+            
+            order.receivedItems = [];
+            let allReceived = true;
+            
+            order.items.forEach(item => {
+                const receivedQty = parseInt(document.getElementById(`receive-${item.code}`).value) || 0;
+                order.receivedItems.push({
+                    code: item.code,
+                    quantity: receivedQty
+                });
+                
+                if (receivedQty < item.quantity) allReceived = false;
+                
+                // Actualizar stock
+                if (!stockData[item.code]) stockData[item.code] = { current: 0, minimum: 0 };
+                stockData[item.code].current += receivedQty;
+            });
+            
+            order.status = allReceived ? 'recibido' : 'parcial';
+            order.receivedAt = new Date().toISOString();
+            
+            document.getElementById('receiveModal').remove();
+            saveToFirebase();
+            loadFactoryOrderHistory();
+            updateFactoryStats();
+            
+            alert(`✅ Pedido ${orderId} marcado como ${allReceived ? 'RECIBIDO' : 'RECIBIDO PARCIALMENTE'}\n\nEl stock ha sido actualizado.`);
+        }
+        
+        function deleteFactoryOrder(orderId) {
+            if (confirm(`¿Eliminar pedido ${orderId}? Esta acción no se puede deshacer.`)) {
+                factoryOrdersData = factoryOrdersData.filter(o => o.id !== orderId);
+                saveToFirebase();
+                loadFactoryOrderHistory();
+                updateFactoryStats();
+            }
+        }
+        
+        function loadLowStockProducts() {
+            const tbody = document.getElementById('lowStockBody');
+            
+            const lowStock = productsData.filter(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                return stock.minimum > 0 && stock.current <= stock.minimum;
+            });
+            
+            if (lowStock.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #4caf50;"><h3>✅ Todo el stock está en niveles normales</h3></td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = lowStock.map(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                const faltan = stock.minimum - stock.current;
+                
+                return `
+                    <tr>
+                        <td><strong>${p.code}</strong></td>
+                        <td>${p.description}</td>
+                        <td><span class="supplier-badge">${p.supplier}</span></td>
+                        <td style="color: #f44336; font-weight: bold;">${stock.current}</td>
+                        <td>${stock.minimum}</td>
+                        <td style="color: #f44336; font-weight: bold;">⚠️ ${faltan}</td>
+                        <td>
+                            <button class="btn btn-warning btn-small" onclick="quickAddToOrder('${p.code}', ${faltan})">➕ Agregar a Pedido</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function quickAddToOrder(code, suggestedQty) {
+            const product = productsData.find(p => p.code === code);
+            if (!product) return;
+            
+            // Cambiar a pestaña nuevo pedido
+            showFactoryTab('new-order');
+            
+            // Seleccionar proveedor
+            document.getElementById('factoryOrderSupplier').value = product.supplier;
+            loadSupplierProducts();
+            
+            // Esperar a que se carguen los productos y establecer cantidad
+            setTimeout(() => {
+                const qtyInput = document.getElementById(`qty-${code}`);
+                if (qtyInput) {
+                    qtyInput.value = suggestedQty;
+                    updateFactoryOrderItem(code, suggestedQty, product.basePrice || product.purchasePrice || 0);
+                }
+            }, 100);
+        }
+        
+        function generateLowStockOrders() {
+            const lowStock = productsData.filter(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                return stock.minimum > 0 && stock.current <= stock.minimum;
+            });
+            
+            if (lowStock.length === 0) {
+                alert('✅ No hay productos con stock bajo');
+                return;
+            }
+            
+            // Agrupar por proveedor
+            const bySupplier = {};
+            lowStock.forEach(p => {
+                if (!bySupplier[p.supplier]) bySupplier[p.supplier] = [];
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                bySupplier[p.supplier].push({
+                    ...p,
+                    suggestedQty: stock.minimum - stock.current
+                });
+            });
+            
+            let message = '📋 PEDIDOS SUGERIDOS:\n\n';
+            Object.keys(bySupplier).forEach(supplier => {
+                message += `🏭 ${supplier}:\n`;
+                bySupplier[supplier].forEach(p => {
+                    message += `  • ${p.code} - ${p.description}: ${p.suggestedQty} unidades\n`;
+                });
+                message += '\n';
+            });
+            
+            alert(message + '\n¿Querés crear estos pedidos? Andá a "Nuevo Pedido" y seleccioná cada proveedor.');
+        }
+        
+        function updateFactoryStats() {
+            const pending = factoryOrdersData.filter(o => o.status === 'pendiente').length;
+            const sent = factoryOrdersData.filter(o => o.status === 'enviado').length;
+            const received = factoryOrdersData.filter(o => o.status === 'recibido').length;
+            
+            const lowStock = productsData.filter(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                return stock.minimum > 0 && stock.current <= stock.minimum;
+            }).length;
+            
+            const pendingEl = document.getElementById('factoryOrdersPending');
+            const sentEl = document.getElementById('factoryOrdersSent');
+            const receivedEl = document.getElementById('factoryOrdersReceived');
+            const lowStockEl = document.getElementById('lowStockCount');
+            
+            if (pendingEl) pendingEl.textContent = pending;
+            if (sentEl) sentEl.textContent = sent;
+            if (receivedEl) receivedEl.textContent = received;
+            if (lowStockEl) lowStockEl.textContent = lowStock;
         }
 
         function loadClientOrders() {
