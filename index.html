@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     
@@ -2399,6 +2400,7 @@
             <!-- TABS INTERNOS -->
             <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                 <button class="btn btn-primary" onclick="showFactoryTab('new-order')" id="btnNewOrder">➕ Nuevo Pedido</button>
+                <button class="btn btn-secondary" onclick="showFactoryTab('stock-entry')" id="btnStockEntry">📥 Entrada de Mercadería</button>
                 <button class="btn btn-secondary" onclick="showFactoryTab('stock-control')" id="btnStockControl">📦 Control de Stock</button>
                 <button class="btn btn-secondary" onclick="showFactoryTab('order-history')" id="btnOrderHistory">📋 Historial de Pedidos</button>
                 <button class="btn btn-secondary" onclick="showFactoryTab('low-stock')" id="btnLowStock">⚠️ Stock Bajo</button>
@@ -2466,6 +2468,100 @@
                                     <button class="btn btn-success" onclick="saveFactoryOrder()">💾 Guardar Pedido</button>
                                     <button class="btn btn-primary" onclick="sendFactoryOrderWhatsApp()">📱 Enviar por WhatsApp</button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENTRADA DE MERCADERÍA -->
+            <div id="factory-stock-entry" class="factory-tab-content" style="display: none;">
+                <div class="config-panel">
+                    <div class="config-group">
+                        <h3>📥 Entrada de Mercadería</h3>
+                        <p style="color: #666; margin-bottom: 15px;">Cargá el stock cuando recibís mercadería de tus proveedores.</p>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                            <div class="input-group">
+                                <label>Proveedor</label>
+                                <select id="entrySupplier" onchange="loadEntryProducts()">
+                                    <option value="">-- Seleccionar Proveedor --</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>Fecha de Entrada</label>
+                                <input type="date" id="entryDate" value="">
+                            </div>
+                            <div class="input-group">
+                                <label>Nº Remito / Factura</label>
+                                <input type="text" id="entryInvoice" placeholder="Ej: 0001-00012345">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Observaciones</label>
+                            <textarea id="entryNotes" placeholder="Notas adicionales..." style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; min-height: 50px;"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PRODUCTOS PARA ENTRADA -->
+                <div id="entryProductsContainer" style="display: none; margin-top: 20px;">
+                    <div class="config-panel">
+                        <div class="config-group">
+                            <h3>📦 Productos de <span id="entrySupplierName"></span></h3>
+                            
+                            <div style="margin-bottom: 15px;">
+                                <input type="text" id="entryProductSearch" placeholder="🔍 Buscar producto..." class="search-box" onkeyup="filterEntryProducts()" style="width: 100%; max-width: 400px;">
+                            </div>
+                            
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Descripción</th>
+                                            <th>Stock Actual</th>
+                                            <th>Cantidad Recibida</th>
+                                            <th>Nuevo Stock</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="entryProductsBody"></tbody>
+                                </table>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                <div>
+                                    <strong>Total productos a cargar:</strong>
+                                    <span id="entryTotalProducts" style="font-size: 1.3em; color: #4caf50; margin-left: 10px;">0</span>
+                                </div>
+                                <button class="btn btn-success" onclick="saveStockEntry()" style="padding: 15px 30px; font-size: 1.1em;">
+                                    ✅ Confirmar Entrada de Mercadería
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- HISTORIAL DE ENTRADAS -->
+                <div style="margin-top: 25px;">
+                    <div class="config-panel">
+                        <div class="config-group">
+                            <h3>📋 Últimas Entradas de Mercadería</h3>
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Proveedor</th>
+                                            <th>Remito/Factura</th>
+                                            <th>Productos</th>
+                                            <th>Unidades</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="stockEntriesHistoryBody"></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -3402,6 +3498,12 @@
                     updatedAt: new Date().toISOString()
                 });
                 
+                // Guardar historial de entradas de mercadería
+                await db.collection('config').doc('stockEntries').set({
+                    data: stockEntriesData,
+                    updatedAt: new Date().toISOString()
+                });
+                
                 console.log('✅ Datos guardados en Firebase');
             } catch (error) {
                 console.error('❌ Error guardando en Firebase:', error);
@@ -3497,6 +3599,13 @@
                 if (stockDoc.exists && stockDoc.data().data) {
                     stockData = stockDoc.data().data;
                     console.log('✅ Stock cargado desde Firebase');
+                }
+                
+                // Cargar historial de entradas de mercadería
+                const stockEntriesDoc = await db.collection('config').doc('stockEntries').get();
+                if (stockEntriesDoc.exists && stockEntriesDoc.data().data) {
+                    stockEntriesData = stockEntriesDoc.data().data;
+                    console.log('✅ Historial de entradas cargado desde Firebase:', stockEntriesData.length);
                 }
                 
                 console.log('✅ Todos los datos cargados desde Firebase');
@@ -6391,7 +6500,8 @@ function exportOrderToPDF() {
                 companyData,
                 announcementsData,
                 factoryOrdersData,
-                stockData
+                stockData,
+                stockEntriesData
             };
 
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -6424,6 +6534,7 @@ function exportOrderToPDF() {
                     columnTemplates = backup.columnTemplates || {};
                     factoryOrdersData = backup.factoryOrdersData || [];
                     stockData = backup.stockData || {};
+                    stockEntriesData = backup.stockEntriesData || [];
                     announcementsData = backup.announcementsData || [];
                     
                     // Restaurar usuarios si existen
@@ -8306,6 +8417,7 @@ function exportOrderToPDF() {
             // Activar botón correspondiente
             const btnMap = {
                 'new-order': 'btnNewOrder',
+                'stock-entry': 'btnStockEntry',
                 'stock-control': 'btnStockControl',
                 'order-history': 'btnOrderHistory',
                 'low-stock': 'btnLowStock'
@@ -8320,6 +8432,10 @@ function exportOrderToPDF() {
             if (tabName === 'new-order') {
                 loadFactorySuppliers();
                 document.getElementById('factoryOrderDate').value = new Date().toISOString().split('T')[0];
+            } else if (tabName === 'stock-entry') {
+                loadEntrySuppliers();
+                document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+                loadStockEntriesHistory();
             } else if (tabName === 'stock-control') {
                 loadStockControl();
             } else if (tabName === 'order-history') {
@@ -8870,6 +8986,220 @@ function exportOrderToPDF() {
             if (sentEl) sentEl.textContent = sent;
             if (receivedEl) receivedEl.textContent = received;
             if (lowStockEl) lowStockEl.textContent = lowStock;
+        }
+
+        // =============================================
+        // FUNCIONES DE ENTRADA DE MERCADERÍA
+        // =============================================
+        
+        let stockEntriesData = []; // Historial de entradas de mercadería
+        let currentStockEntry = { items: [], supplier: '' };
+        
+        function loadEntryProducts() {
+            const supplier = document.getElementById('entrySupplier').value;
+            const container = document.getElementById('entryProductsContainer');
+            const tbody = document.getElementById('entryProductsBody');
+            const nameSpan = document.getElementById('entrySupplierName');
+            
+            if (!supplier) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'block';
+            nameSpan.textContent = supplier;
+            currentStockEntry = { items: [], supplier: supplier };
+            
+            const products = productsData.filter(p => p.supplier === supplier);
+            
+            tbody.innerHTML = products.map(p => {
+                const stock = stockData[p.code] || { current: 0, minimum: 0 };
+                
+                return `
+                    <tr>
+                        <td><strong>${p.code}</strong></td>
+                        <td>${p.description}</td>
+                        <td id="entry-stock-${p.code}">${stock.current}</td>
+                        <td>
+                            <input type="number" min="0" value="0" 
+                                   id="entry-qty-${p.code}" 
+                                   onchange="updateEntryItem('${p.code}', this.value)"
+                                   style="width: 100px; padding: 8px; border-radius: 5px; border: 2px solid #e0e0e0; text-align: center; font-size: 1.1em;">
+                        </td>
+                        <td id="entry-new-${p.code}" style="font-weight: bold; color: #4caf50;">${stock.current}</td>
+                    </tr>
+                `;
+            }).join('');
+            
+            if (products.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: #999;">No hay productos para este proveedor</td></tr>';
+            }
+            
+            updateEntryTotal();
+        }
+        
+        function updateEntryItem(code, qty) {
+            const quantity = parseInt(qty) || 0;
+            const stock = stockData[code] || { current: 0, minimum: 0 };
+            const newStock = stock.current + quantity;
+            
+            document.getElementById(`entry-new-${code}`).textContent = newStock;
+            
+            // Actualizar item en la entrada
+            const existingIndex = currentStockEntry.items.findIndex(i => i.code === code);
+            if (quantity > 0) {
+                const product = productsData.find(p => p.code === code);
+                const item = {
+                    code: code,
+                    description: product ? product.description : '',
+                    quantity: quantity,
+                    previousStock: stock.current,
+                    newStock: newStock
+                };
+                if (existingIndex >= 0) {
+                    currentStockEntry.items[existingIndex] = item;
+                } else {
+                    currentStockEntry.items.push(item);
+                }
+            } else if (existingIndex >= 0) {
+                currentStockEntry.items.splice(existingIndex, 1);
+            }
+            
+            updateEntryTotal();
+        }
+        
+        function updateEntryTotal() {
+            const total = currentStockEntry.items.reduce((sum, item) => sum + item.quantity, 0);
+            const count = currentStockEntry.items.length;
+            document.getElementById('entryTotalProducts').textContent = `${count} productos (${total} unidades)`;
+        }
+        
+        function filterEntryProducts() {
+            const search = document.getElementById('entryProductSearch').value.toLowerCase();
+            const rows = document.querySelectorAll('#entryProductsBody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(search) ? '' : 'none';
+            });
+        }
+        
+        function saveStockEntry() {
+            if (!currentStockEntry.supplier) {
+                alert('❌ Seleccioná un proveedor');
+                return;
+            }
+            
+            if (currentStockEntry.items.length === 0) {
+                alert('❌ Ingresá la cantidad recibida de al menos un producto');
+                return;
+            }
+            
+            const entry = {
+                id: 'ENT-' + Date.now(),
+                supplier: currentStockEntry.supplier,
+                items: [...currentStockEntry.items],
+                totalProducts: currentStockEntry.items.length,
+                totalUnits: currentStockEntry.items.reduce((sum, i) => sum + i.quantity, 0),
+                date: document.getElementById('entryDate').value || new Date().toISOString().split('T')[0],
+                invoice: document.getElementById('entryInvoice').value,
+                notes: document.getElementById('entryNotes').value,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Actualizar stock de cada producto
+            currentStockEntry.items.forEach(item => {
+                if (!stockData[item.code]) {
+                    stockData[item.code] = { current: 0, minimum: 0 };
+                }
+                stockData[item.code].current += item.quantity;
+            });
+            
+            // Guardar en historial
+            stockEntriesData.push(entry);
+            
+            // Guardar en Firebase
+            saveToFirebase();
+            
+            alert(`✅ Entrada de mercadería registrada\n\nProveedor: ${entry.supplier}\nProductos: ${entry.totalProducts}\nUnidades totales: ${entry.totalUnits}\nRemito: ${entry.invoice || 'N/A'}`);
+            
+            // Limpiar formulario
+            document.getElementById('entrySupplier').value = '';
+            document.getElementById('entryInvoice').value = '';
+            document.getElementById('entryNotes').value = '';
+            document.getElementById('entryProductsContainer').style.display = 'none';
+            currentStockEntry = { items: [], supplier: '' };
+            
+            // Actualizar historial y estadísticas
+            loadStockEntriesHistory();
+            updateFactoryStats();
+        }
+        
+        function loadStockEntriesHistory() {
+            const tbody = document.getElementById('stockEntriesHistoryBody');
+            
+            if (!stockEntriesData || stockEntriesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: #999;">No hay entradas registradas</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = stockEntriesData.slice().reverse().slice(0, 20).map(entry => {
+                const fecha = new Date(entry.date || entry.createdAt).toLocaleDateString('es-AR');
+                
+                return `
+                    <tr>
+                        <td>${fecha}</td>
+                        <td><span class="supplier-badge">${entry.supplier}</span></td>
+                        <td>${entry.invoice || '-'}</td>
+                        <td>${entry.totalProducts}</td>
+                        <td><strong>${entry.totalUnits}</strong></td>
+                        <td>
+                            <button class="btn btn-primary btn-small" onclick="viewStockEntry('${entry.id}')" title="Ver detalle">👁️</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteStockEntry('${entry.id}')" title="Eliminar">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function viewStockEntry(entryId) {
+            const entry = stockEntriesData.find(e => e.id === entryId);
+            if (!entry) return;
+            
+            let details = `📥 ENTRADA DE MERCADERÍA\n\n`;
+            details += `📅 Fecha: ${new Date(entry.date || entry.createdAt).toLocaleDateString('es-AR')}\n`;
+            details += `🏭 Proveedor: ${entry.supplier}\n`;
+            details += `📄 Remito/Factura: ${entry.invoice || 'N/A'}\n\n`;
+            details += `PRODUCTOS RECIBIDOS:\n`;
+            
+            entry.items.forEach(item => {
+                details += `• ${item.code} - ${item.description}\n`;
+                details += `  Cantidad: ${item.quantity} (${item.previousStock} → ${item.newStock})\n`;
+            });
+            
+            details += `\nTOTAL: ${entry.totalProducts} productos, ${entry.totalUnits} unidades`;
+            if (entry.notes) details += `\n\n📝 Notas: ${entry.notes}`;
+            
+            alert(details);
+        }
+        
+        function deleteStockEntry(entryId) {
+            const entry = stockEntriesData.find(e => e.id === entryId);
+            if (!entry) return;
+            
+            if (confirm(`¿Eliminar esta entrada de mercadería?\n\nNOTA: Esto NO revertirá el stock. Si necesitás corregir el stock, hacelo manualmente en "Control de Stock".`)) {
+                stockEntriesData = stockEntriesData.filter(e => e.id !== entryId);
+                saveToFirebase();
+                loadStockEntriesHistory();
+            }
+        }
+        
+        function loadEntrySuppliers() {
+            const select = document.getElementById('entrySupplier');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">-- Seleccionar Proveedor --</option>' + 
+                suppliersData.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
         }
 
         function loadClientOrders() {
