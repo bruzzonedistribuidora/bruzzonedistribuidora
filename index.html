@@ -35,6 +35,15 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
+        
+        /* Responsive container general */
+        @media (max-width: 768px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+            }
+        }
 
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -42,6 +51,12 @@
             padding: 30px;
             text-align: center;
             position: relative;
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px;
+            }
         }
 
         .header-content {
@@ -51,6 +66,13 @@
             gap: 30px;
             margin-bottom: 10px;
         }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
 
         .header-logo {
             width: 150px;
@@ -59,20 +81,50 @@
             padding: 10px;
             border-radius: 10px;
         }
+        
+        @media (max-width: 480px) {
+            .header-logo {
+                width: 80px;
+            }
+        }
 
         .header-info {
             text-align: left;
+        }
+        
+        @media (max-width: 768px) {
+            .header-info {
+                text-align: center;
+            }
         }
 
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 5px;
         }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2em;
+            }
+        }
 
         .header p {
             font-size: 1.1em;
             opacity: 0.9;
             margin: 3px 0;
+        }
+        
+        @media (max-width: 480px) {
+            .header p {
+                font-size: 0.9em;
+            }
         }
 
         .header-contact {
@@ -493,10 +545,18 @@
 
         .login-container {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 80vh;
             padding: 20px;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 10px;
+                min-height: auto;
+            }
         }
 
         .login-box {
@@ -507,15 +567,33 @@
             max-width: 400px;
             width: 100%;
         }
+        
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 20px;
+                border-radius: 10px;
+            }
+        }
 
         .login-box h2 {
             color: #667eea;
             margin-bottom: 30px;
             text-align: center;
         }
+        
+        @media (max-width: 480px) {
+            .login-box h2 {
+                font-size: 1.3em;
+                margin-bottom: 20px;
+            }
+        }
 
         .login-box .input-group {
             margin-bottom: 20px;
+        }
+        
+        .login-box .input-group input {
+            font-size: 16px; /* Evita zoom en iOS */
         }
 
         .user-info {
@@ -1139,6 +1217,97 @@
         /* ========================================
            ESTILOS RESPONSIVE PORTAL DE CLIENTES
            ======================================== */
+        
+        /* ========================================
+           ESTILOS RESPONSIVE PANTALLA LOGIN
+           ======================================== */
+        @media (max-width: 768px) {
+            #loginScreen .header h1 {
+                font-size: 1.3em !important;
+            }
+            
+            #loginScreen .header p {
+                font-size: 1em !important;
+            }
+            
+            #loginScreen .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            #loginScreen .header-logo {
+                width: 80px;
+                height: 80px;
+            }
+            
+            #loginScreen .login-container {
+                padding: 15px !important;
+                margin: 10px !important;
+            }
+            
+            #loginScreen .login-container > div:first-child {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+            
+            #loginScreen .login-container .btn {
+                width: 100%;
+                padding: 12px 20px !important;
+            }
+            
+            #loginScreen .login-box {
+                padding: 20px !important;
+            }
+            
+            #loginScreen .login-box h2 {
+                font-size: 1.3em;
+            }
+            
+            #loginScreen .input-group input {
+                font-size: 16px !important; /* Evita zoom en iOS */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #loginScreen .header {
+                padding: 15px 10px !important;
+            }
+            
+            #loginScreen .header h1 {
+                font-size: 1.1em !important;
+            }
+            
+            #loginScreen .header-logo {
+                width: 60px;
+                height: 60px;
+            }
+            
+            #loginScreen .login-container {
+                margin: 5px !important;
+                padding: 10px !important;
+            }
+            
+            #loginScreen .login-box {
+                padding: 15px !important;
+            }
+            
+            #loginScreen .login-box h2 {
+                font-size: 1.1em;
+            }
+            
+            #loginScreen .login-box p {
+                font-size: 0.85em !important;
+            }
+            
+            #loginScreen div[style*="display: flex"][style*="gap: 15px"] {
+                flex-direction: column !important;
+            }
+            
+            #loginScreen div[style*="display: flex"][style*="gap: 15px"] .btn {
+                width: 100% !important;
+            }
+        }
         
         /* Tablets y móviles */
         @media (max-width: 768px) {
