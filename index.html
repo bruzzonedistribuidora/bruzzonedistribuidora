@@ -7305,19 +7305,27 @@ function exportOrderToPDF() {
                     const productos = porMarca[marca];
                     
                     const productosHTML = productos.map(product => {
-                        const precioBase = product.basePrice || (product.purchasePrice / (1 + (product.iva || 21) / 100));
-                        const precioMayorista = applyRounding(precioBase * (1 + marginWholesale), roundingOption);
+                        // Obtener cantidad por bulto
+                        const cantidadBulto = product.cantidadBulto || product['Cantidad por Bulto'] || product['cantidad por bulto'] || 1;
+                        
+                        // Calcular precio por unidad
+                        const precioCompra = parseFloat(product.purchasePrice) || 0;
+                        const precioUnitario = precioCompra / cantidadBulto;
+                        const precioMayoristaUnidad = applyRounding(precioUnitario * (1 + marginWholesale), roundingOption);
 
                         return `
-                            <div class="product-card" style="display: grid; grid-template-columns: 100px 1fr 120px 100px; gap: 15px; align-items: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px;">
+                            <div class="product-card" style="display: grid; grid-template-columns: 100px 1fr 150px 100px; gap: 15px; align-items: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px;">
                                 <div><strong style="color: #667eea; font-size: 1.1em;">${product.code}</strong></div>
                                 <div>
                                     <div style="font-weight: 600; margin-bottom: 5px;">${product.description}</div>
-                                    <div style="font-size: 0.85em; color: #666;"><span class="supplier-badge">${product.supplier}</span></div>
+                                    <div style="font-size: 0.85em; color: #666;">
+                                        <span class="supplier-badge">${product.supplier}</span>
+                                        ${cantidadBulto > 1 ? `<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 5px;">📦 ${cantidadBulto} u/bulto</span>` : ''}
+                                    </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-size: 1.3em; font-weight: 700; color: #4caf50;">$${precioMayorista.toFixed(2)}</div>
-                                    <div style="font-size: 0.75em; color: #999;">Sin IVA</div>
+                                    <div style="font-size: 1.3em; font-weight: 700; color: #4caf50;">$${precioMayoristaUnidad.toFixed(2)}</div>
+                                    <div style="font-size: 0.75em; color: #999;">Precio x unidad</div>
                                 </div>
                                 <div><button class="btn btn-success" onclick="addToCart('${product.code}', event)" style="width: 100%; padding: 12px 20px; font-size: 1.1em; font-weight: 600;">➕ AGREGAR</button></div>
                             </div>
@@ -7364,21 +7372,29 @@ function exportOrderToPDF() {
             }
 
             container.innerHTML = filtered.map(product => {
-                const precioBase = product.basePrice || (product.purchasePrice / (1 + (product.iva || 21) / 100));
-                const precioMayorista = applyRounding(precioBase * (1 + marginWholesale), roundingOption);
+                // Obtener cantidad por bulto
+                const cantidadBulto = product.cantidadBulto || product['Cantidad por Bulto'] || product['cantidad por bulto'] || 1;
+                
+                // Calcular precio por unidad
+                const precioCompra = parseFloat(product.purchasePrice) || 0;
+                const precioUnitario = precioCompra / cantidadBulto;
+                const precioMayoristaUnidad = applyRounding(precioUnitario * (1 + marginWholesale), roundingOption);
 
                 return `
-                    <div class="product-card" style="display: grid; grid-template-columns: 100px 1fr 120px 100px; gap: 15px; align-items: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px;">
+                    <div class="product-card" style="display: grid; grid-template-columns: 100px 1fr 150px 100px; gap: 15px; align-items: center; padding: 15px; background: white; border: 2px solid #e0e0e0; border-radius: 10px; margin-bottom: 10px;">
                         <div><strong style="color: #667eea; font-size: 1.1em;">${product.code}</strong></div>
                         <div>
                             <div style="font-weight: 600; margin-bottom: 5px;">${product.description}</div>
-                            <div style="font-size: 0.85em; color: #666;"><span class="brand-badge">${product.brand}</span></div>
+                            <div style="font-size: 0.85em; color: #666;">
+                                <span class="brand-badge">${product.brand}</span>
+                                ${cantidadBulto > 1 ? `<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 5px; margin-left: 5px;">📦 ${cantidadBulto} u/bulto</span>` : ''}
+                            </div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 1.3em; font-weight: 700; color: #4caf50;">$${precioMayorista.toFixed(2)}</div>
-                            <div style="font-size: 0.75em; color: #999;">Sin IVA</div>
+                            <div style="font-size: 1.3em; font-weight: 700; color: #4caf50;">$${precioMayoristaUnidad.toFixed(2)}</div>
+                            <div style="font-size: 0.75em; color: #999;">Precio x unidad</div>
                         </div>
-                        <div><button class="btn btn-success" onclick="addToCart('${product.code}')" style="width: 100%; padding: 12px 20px; font-size: 1.1em; font-weight: 600;">➕ Agregar al Carrito</button></div>
+                        <div><button class="btn btn-success" onclick="addToCart('${product.code}')" style="width: 100%; padding: 12px 20px; font-size: 1.1em; font-weight: 600;">➕ AGREGAR</button></div>
                     </div>
                 `;
             }).join('');
@@ -7395,15 +7411,22 @@ function exportOrderToPDF() {
             } else {
                 const marginWholesale = parseFloat(marginSettingsMemory.marginWholesale || 20) / 100;
                 const roundingOption = marginSettingsMemory.roundingOption || 'normal';
-                const precioBase = product.basePrice || (product.purchasePrice / (1 + (product.iva || 21) / 100));
-                const precio = applyRounding(precioBase * (1 + marginWholesale), roundingOption);
+                
+                // Obtener cantidad por bulto
+                const cantidadBulto = product.cantidadBulto || product['Cantidad por Bulto'] || product['cantidad por bulto'] || 1;
+                
+                // Calcular precio por unidad
+                const precioCompra = parseFloat(product.purchasePrice) || 0;
+                const precioUnitario = precioCompra / cantidadBulto;
+                const precio = applyRounding(precioUnitario * (1 + marginWholesale), roundingOption);
 
                 clientCart.push({
                     code: product.code,
                     description: product.description,
                     brand: product.brand,
                     price: precio,
-                    quantity: 1
+                    quantity: 1,
+                    cantidadBulto: cantidadBulto
                 });
             }
 
