@@ -9834,10 +9834,12 @@ function exportOrderToPDF() {
                 return;
             }
             
-            const results = productsData.filter(p => 
-                (p.code && p.code.toLowerCase().includes(searchTerm)) ||
-                (p.description && p.description.toLowerCase().includes(searchTerm))
-            ).slice(0, 20); // Limitar a 20 resultados
+            const results = productsData.filter(p => {
+                const code = (p.code || '').toString().toLowerCase();
+                const description = (p.description || '').toString().toLowerCase();
+                const brand = (p.brand || '').toString().toLowerCase();
+                return code.includes(searchTerm) || description.includes(searchTerm) || brand.includes(searchTerm);
+            }).slice(0, 20); // Limitar a 20 resultados
             
             if (results.length === 0) {
                 resultsDiv.innerHTML = '<p style="padding: 20px; text-align: center; color: #999;">No se encontraron productos</p>';
