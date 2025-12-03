@@ -16,6 +16,650 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- ESTILOS MÓVILES OPTIMIZADOS -->
+    <style>
+        /* =====================================================
+           SISTEMA MÓVIL OPTIMIZADO - BRUZZONE DISTRIBUIDORA
+           ===================================================== */
+        
+        /* === NAVEGACIÓN INFERIOR FIJA (MOBILE BOTTOM NAV) === */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 8px 0;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom));
+            z-index: 9999;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            border-top: 2px solid #667eea;
+        }
+        
+        .mobile-bottom-nav-inner {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.7em;
+            font-weight: 600;
+            transition: all 0.2s;
+            border-radius: 12px;
+            min-width: 60px;
+        }
+        
+        .mobile-nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.15);
+        }
+        
+        .mobile-nav-item:active {
+            transform: scale(0.95);
+        }
+        
+        .mobile-nav-icon {
+            font-size: 1.8em;
+            margin-bottom: 3px;
+        }
+        
+        .mobile-nav-label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 60px;
+        }
+        
+        /* === MENÚ HAMBURGER DESLIZABLE === */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .mobile-menu-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+        
+        .mobile-slide-menu {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            max-width: 85vw;
+            height: 100%;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            z-index: 10001;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .mobile-slide-menu.open {
+            transform: translateX(320px);
+        }
+        
+        .mobile-menu-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .mobile-menu-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+        }
+        
+        .mobile-menu-header p {
+            margin: 5px 0 0;
+            opacity: 0.85;
+            font-size: 0.9em;
+        }
+        
+        .mobile-menu-items {
+            padding: 15px 0;
+        }
+        
+        .mobile-menu-section {
+            padding: 10px 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        
+        .mobile-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            font-size: 1em;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .mobile-menu-link:active,
+        .mobile-menu-link.active {
+            background: rgba(102, 126, 234, 0.2);
+            border-left-color: #667eea;
+        }
+        
+        .mobile-menu-link span:first-child {
+            font-size: 1.3em;
+        }
+        
+        .mobile-menu-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* === BOTÓN HAMBURGER FLOTANTE === */
+        .mobile-hamburger-btn {
+            display: none;
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 9998;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* === AJUSTES GENERALES MÓVIL === */
+        @media (max-width: 768px) {
+            .mobile-bottom-nav {
+                display: block;
+            }
+            
+            .mobile-hamburger-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            body {
+                padding: 10px;
+                padding-bottom: 90px;
+            }
+            
+            /* Ocultar tabs originales en móvil */
+            .tabs {
+                display: none !important;
+            }
+            
+            /* Header más compacto */
+            .header {
+                padding: 15px;
+                padding-top: 70px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em !important;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .header-logo {
+                width: 70px !important;
+            }
+            
+            .header-info {
+                text-align: center;
+            }
+            
+            .header-top {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .user-info {
+                font-size: 0.85em;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            /* Stats cards en móvil */
+            .stats {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px;
+                padding: 15px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-card h3 {
+                font-size: 1.3em;
+            }
+            
+            .stat-card p {
+                font-size: 0.8em;
+            }
+            
+            /* Contenido de tabs */
+            .tab-content {
+                padding: 15px;
+            }
+            
+            .tab-content h2 {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+            }
+            
+            /* Botones más grandes para touch */
+            .btn {
+                padding: 15px 25px;
+                font-size: 1em;
+                min-height: 48px;
+            }
+            
+            .btn-small {
+                padding: 10px 18px;
+                min-height: 40px;
+            }
+            
+            /* Inputs más grandes */
+            input, select, textarea {
+                font-size: 16px !important;
+                padding: 14px !important;
+                min-height: 48px;
+            }
+            
+            /* Tablas como cards */
+            .table-container {
+                border-radius: 15px;
+                overflow: hidden;
+            }
+            
+            table {
+                display: block;
+            }
+            
+            thead {
+                display: none;
+            }
+            
+            tbody {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            tr {
+                display: flex;
+                flex-direction: column;
+                background: white;
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                border-left: 4px solid #667eea;
+            }
+            
+            tr:hover {
+                transform: none;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            }
+            
+            td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            td:last-child {
+                border-bottom: none;
+            }
+            
+            td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #667eea;
+                font-size: 0.85em;
+                flex-shrink: 0;
+                margin-right: 10px;
+            }
+            
+            /* Grids responsive */
+            .config-panel,
+            div[style*="grid-template-columns: 1fr 1fr"],
+            div[style*="grid-template-columns: repeat(3"] {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Config groups */
+            .config-group {
+                padding: 15px;
+            }
+            
+            .config-group h3 {
+                font-size: 1.1em;
+            }
+            
+            /* Upload zones */
+            .upload-zone {
+                padding: 30px 20px;
+            }
+            
+            .upload-zone h3 {
+                font-size: 1.2em;
+            }
+            
+            /* Product cards */
+            .product-card {
+                margin-bottom: 12px;
+            }
+            
+            .product-card-body {
+                padding: 12px;
+            }
+            
+            /* Order items */
+            .order-item {
+                flex-direction: column;
+                gap: 10px;
+                align-items: stretch;
+            }
+            
+            .order-item-actions {
+                justify-content: center;
+            }
+            
+            /* Formularios de compras */
+            .purchase-item-row {
+                grid-template-columns: 1fr !important;
+                gap: 10px;
+            }
+            
+            .purchase-item-row input {
+                width: 100% !important;
+            }
+            
+            /* Scrollbar personalizado */
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: #667eea;
+                border-radius: 4px;
+            }
+            
+            /* Alerts */
+            .alert {
+                font-size: 0.9em;
+                padding: 12px;
+            }
+            
+            /* Badges */
+            .supplier-badge,
+            .brand-badge,
+            .status-badge {
+                font-size: 0.75em;
+                padding: 4px 8px;
+            }
+            
+            /* Modals/popups más móvil-friendly */
+            .edit-section,
+            div[style*="background: #fff3cd"][style*="border: 2px solid #ff9800"] {
+                border-radius: 10px;
+                padding: 15px;
+            }
+            
+            /* Hide debug en móvil por defecto */
+            div[style*="Debug Info"] {
+                display: none !important;
+            }
+        }
+        
+        /* === MÓVILES MUY PEQUEÑOS === */
+        @media (max-width: 380px) {
+            .mobile-nav-item {
+                padding: 6px 8px;
+                min-width: 50px;
+            }
+            
+            .mobile-nav-icon {
+                font-size: 1.5em;
+            }
+            
+            .mobile-nav-label {
+                font-size: 0.65em;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+            }
+        }
+        
+        /* === ANIMACIONES SUAVES === */
+        @media (max-width: 768px) {
+            .tab-content {
+                animation: fadeInUp 0.3s ease;
+            }
+            
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            
+            .product-card,
+            .stat-card,
+            tr {
+                animation: fadeIn 0.3s ease;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+        }
+        
+        /* === PULL TO REFRESH INDICATOR === */
+        .pull-indicator {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9em;
+            z-index: 9997;
+            transform: translateY(-100%);
+            transition: transform 0.3s;
+        }
+        
+        .pull-indicator.show {
+            transform: translateY(0);
+        }
+        
+        /* === FAB (Floating Action Button) === */
+        .mobile-fab {
+            display: none;
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 9998;
+            box-shadow: 0 4px 20px rgba(76, 175, 80, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .mobile-fab:active {
+            transform: scale(0.95);
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-fab {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        
+        /* === TOAST NOTIFICATIONS === */
+        .mobile-toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            z-index: 10002;
+            opacity: 0;
+            transition: all 0.3s;
+            max-width: 90%;
+            text-align: center;
+        }
+        
+        .mobile-toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .mobile-toast.success {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        }
+        
+        .mobile-toast.error {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+        }
+        
+        /* === QUICK ACTIONS PANEL === */
+        .quick-actions {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            left: 10px;
+            right: 10px;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+            z-index: 9997;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .quick-actions.show {
+            display: block;
+        }
+        
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 10px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 12px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-action-btn:active {
+            transform: scale(0.95);
+            background: #e0e0e0;
+        }
+        
+        .quick-action-btn span:first-child {
+            font-size: 1.5em;
+            margin-bottom: 5px;
+        }
+        
+        .quick-action-btn span:last-child {
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+    </style>
     <style>
         * {
             margin: 0;
@@ -29831,5 +30475,385 @@ function exportOrderToPDF() {
 
 </script>
 
+
+
+<!-- =====================================================
+     COMPONENTES DE NAVEGACIÓN MÓVIL
+     ===================================================== -->
+
+<!-- Botón Hamburger Flotante -->
+<button class="mobile-hamburger-btn" onclick="toggleMobileMenu()">☰</button>
+
+<!-- Overlay del Menú -->
+<div class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+
+<!-- Menú Deslizable -->
+<div class="mobile-slide-menu" id="mobileSlideMenu">
+    <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+    
+    <div class="mobile-menu-header">
+        <h3>🛠️ Bruzzone Distribuidora</h3>
+        <p>Sistema de Distribución</p>
+    </div>
+    
+    <div class="mobile-menu-items">
+        <div class="mobile-menu-section">Gestión Principal</div>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('suppliers')">
+            <span>🏢</span>
+            <span>Proveedores</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('import')">
+            <span>📥</span>
+            <span>Importar Precios</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('catalog')">
+            <span>📋</span>
+            <span>Catálogo</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('visual-catalog')">
+            <span>📸</span>
+            <span>Catálogo Visual</span>
+        </a>
+        
+        <div class="mobile-menu-section">Ventas</div>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('orders')">
+            <span>📝</span>
+            <span>Pedidos</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('factory-orders')">
+            <span>🏭</span>
+            <span>Pedidos a Fábrica</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('purchases')">
+            <span>📦</span>
+            <span>Compras</span>
+        </a>
+        
+        <div class="mobile-menu-section">Equipo</div>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('sellers')">
+            <span>👥</span>
+            <span>Vendedores</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('clients')">
+            <span>🛒</span>
+            <span>Clientes</span>
+        </a>
+        
+        <div class="mobile-menu-section">Configuración</div>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('banners')">
+            <span>📢</span>
+            <span>Publicidades</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('company')">
+            <span>🏭</span>
+            <span>Mi Empresa</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('config')">
+            <span>⚙️</span>
+            <span>Configuración</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('backup')">
+            <span>💾</span>
+            <span>Backup</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('catalogs')">
+            <span>📁</span>
+            <span>Catálogos PDF</span>
+        </a>
+        <a href="#" class="mobile-menu-link" onclick="mobileNavigateTo('export')">
+            <span>📤</span>
+            <span>Exportar</span>
+        </a>
+        
+        <div class="mobile-menu-section" style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">Sesión</div>
+        <a href="#" class="mobile-menu-link" onclick="logout(); closeMobileMenu();" style="color: #ff6b6b;">
+            <span>🚪</span>
+            <span>Cerrar Sesión</span>
+        </a>
+    </div>
+</div>
+
+<!-- Navegación Inferior Fija -->
+<nav class="mobile-bottom-nav">
+    <div class="mobile-bottom-nav-inner">
+        <a href="#" class="mobile-nav-item active" onclick="mobileNavigateTo('catalog')" data-tab="catalog">
+            <span class="mobile-nav-icon">📋</span>
+            <span class="mobile-nav-label">Catálogo</span>
+        </a>
+        <a href="#" class="mobile-nav-item" onclick="mobileNavigateTo('orders')" data-tab="orders">
+            <span class="mobile-nav-icon">📝</span>
+            <span class="mobile-nav-label">Pedidos</span>
+        </a>
+        <a href="#" class="mobile-nav-item" onclick="mobileNavigateTo('purchases')" data-tab="purchases">
+            <span class="mobile-nav-icon">📦</span>
+            <span class="mobile-nav-label">Compras</span>
+        </a>
+        <a href="#" class="mobile-nav-item" onclick="mobileNavigateTo('suppliers')" data-tab="suppliers">
+            <span class="mobile-nav-icon">🏢</span>
+            <span class="mobile-nav-label">Proveed.</span>
+        </a>
+        <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()">
+            <span class="mobile-nav-icon">☰</span>
+            <span class="mobile-nav-label">Más</span>
+        </a>
+    </div>
+</nav>
+
+<!-- FAB (Floating Action Button) para acciones rápidas -->
+<button class="mobile-fab" onclick="toggleQuickActions()" id="mobileFab">+</button>
+
+<!-- Panel de Acciones Rápidas -->
+<div class="quick-actions" id="quickActionsPanel">
+    <div class="quick-actions-grid">
+        <button class="quick-action-btn" onclick="mobileNavigateTo('import'); hideQuickActions();">
+            <span>📥</span>
+            <span>Importar</span>
+        </button>
+        <button class="quick-action-btn" onclick="mobileNavigateTo('orders'); hideQuickActions();">
+            <span>➕</span>
+            <span>Nuevo Pedido</span>
+        </button>
+        <button class="quick-action-btn" onclick="mobileNavigateTo('purchases'); hideQuickActions();">
+            <span>📦</span>
+            <span>Nueva Compra</span>
+        </button>
+        <button class="quick-action-btn" onclick="mobileNavigateTo('backup'); hideQuickActions();">
+            <span>💾</span>
+            <span>Backup</span>
+        </button>
+        <button class="quick-action-btn" onclick="mobileNavigateTo('export'); hideQuickActions();">
+            <span>📤</span>
+            <span>Exportar</span>
+        </button>
+        <button class="quick-action-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); hideQuickActions();">
+            <span>⬆️</span>
+            <span>Arriba</span>
+        </button>
+    </div>
+</div>
+
+<!-- Toast para notificaciones -->
+<div class="mobile-toast" id="mobileToast"></div>
+
+<!-- JavaScript para Navegación Móvil -->
+<script>
+    // === NAVEGACIÓN MÓVIL ===
+    
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileSlideMenu');
+        const overlay = document.querySelector('.mobile-menu-overlay');
+        
+        if (menu.classList.contains('open')) {
+            closeMobileMenu();
+        } else {
+            menu.classList.add('open');
+            overlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeMobileMenu() {
+        const menu = document.getElementById('mobileSlideMenu');
+        const overlay = document.querySelector('.mobile-menu-overlay');
+        
+        menu.classList.remove('open');
+        overlay.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    
+    function mobileNavigateTo(tabId) {
+        // Cerrar menú si está abierto
+        closeMobileMenu();
+        hideQuickActions();
+        
+        // Usar la función switchTab existente
+        if (typeof switchTab === 'function') {
+            switchTab(tabId);
+        }
+        
+        // Actualizar navegación inferior activa
+        updateMobileNavActive(tabId);
+        
+        // Scroll arriba
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        // Mostrar toast
+        const tabNames = {
+            'suppliers': 'Proveedores',
+            'import': 'Importar Precios',
+            'catalog': 'Catálogo',
+            'visual-catalog': 'Catálogo Visual',
+            'orders': 'Pedidos',
+            'factory-orders': 'Pedidos a Fábrica',
+            'sellers': 'Vendedores',
+            'clients': 'Clientes',
+            'banners': 'Publicidades',
+            'company': 'Mi Empresa',
+            'config': 'Configuración',
+            'backup': 'Backup',
+            'catalogs': 'Catálogos',
+            'export': 'Exportar',
+            'purchases': 'Compras'
+        };
+        
+        showMobileToast('📍 ' + (tabNames[tabId] || tabId));
+        
+        return false;
+    }
+    
+    function updateMobileNavActive(tabId) {
+        // Quitar activo de todos
+        document.querySelectorAll('.mobile-nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Agregar activo al seleccionado
+        const activeItem = document.querySelector(`.mobile-nav-item[data-tab="${tabId}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+        
+        // También actualizar menú lateral
+        document.querySelectorAll('.mobile-menu-link').forEach(link => {
+            link.classList.remove('active');
+        });
+    }
+    
+    // === ACCIONES RÁPIDAS (FAB) ===
+    
+    function toggleQuickActions() {
+        const panel = document.getElementById('quickActionsPanel');
+        const fab = document.getElementById('mobileFab');
+        
+        if (panel.classList.contains('show')) {
+            hideQuickActions();
+        } else {
+            panel.classList.add('show');
+            fab.textContent = '✕';
+            fab.style.background = 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)';
+        }
+    }
+    
+    function hideQuickActions() {
+        const panel = document.getElementById('quickActionsPanel');
+        const fab = document.getElementById('mobileFab');
+        
+        panel.classList.remove('show');
+        fab.textContent = '+';
+        fab.style.background = 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)';
+    }
+    
+    // === TOASTS ===
+    
+    function showMobileToast(message, type = '') {
+        const toast = document.getElementById('mobileToast');
+        toast.textContent = message;
+        toast.className = 'mobile-toast show ' + type;
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2000);
+    }
+    
+    // === DETECTAR SWIPE PARA CERRAR MENÚ ===
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', e => {
+        touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    
+    document.addEventListener('touchend', e => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, false);
+    
+    function handleSwipe() {
+        const menu = document.getElementById('mobileSlideMenu');
+        const swipeThreshold = 100;
+        
+        // Swipe izquierda para cerrar menú
+        if (menu.classList.contains('open') && touchStartX - touchEndX > swipeThreshold) {
+            closeMobileMenu();
+        }
+        
+        // Swipe derecha para abrir menú (solo desde el borde)
+        if (!menu.classList.contains('open') && touchEndX - touchStartX > swipeThreshold && touchStartX < 50) {
+            toggleMobileMenu();
+        }
+    }
+    
+    // === OCULTAR/MOSTRAR BOTTOM NAV AL SCROLLEAR ===
+    
+    let lastScrollTop = 0;
+    const bottomNav = document.querySelector('.mobile-bottom-nav');
+    
+    window.addEventListener('scroll', () => {
+        if (window.innerWidth > 768) return;
+        
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            // Scroll hacia abajo - ocultar
+            bottomNav.style.transform = 'translateY(100%)';
+            document.getElementById('mobileFab').style.bottom = '20px';
+        } else {
+            // Scroll hacia arriba - mostrar
+            bottomNav.style.transform = 'translateY(0)';
+            document.getElementById('mobileFab').style.bottom = '100px';
+        }
+        
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }, false);
+    
+    // === AGREGAR DATA-LABELS A TABLAS PARA MÓVIL ===
+    
+    function addTableDataLabels() {
+        document.querySelectorAll('table').forEach(table => {
+            const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent.trim());
+            
+            table.querySelectorAll('tbody tr').forEach(row => {
+                row.querySelectorAll('td').forEach((td, index) => {
+                    if (headers[index]) {
+                        td.setAttribute('data-label', headers[index]);
+                    }
+                });
+            });
+        });
+    }
+    
+    // Ejecutar cuando se carga y cada vez que cambia el contenido
+    document.addEventListener('DOMContentLoaded', addTableDataLabels);
+    
+    // Observer para detectar cambios en tablas dinámicas
+    const tableObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                addTableDataLabels();
+            }
+        });
+    });
+    
+    // Observar cambios en el body
+    setTimeout(() => {
+        tableObserver.observe(document.body, { childList: true, subtree: true });
+    }, 1000);
+    
+    // === CERRAR QUICK ACTIONS AL TOCAR FUERA ===
+    
+    document.addEventListener('click', (e) => {
+        const panel = document.getElementById('quickActionsPanel');
+        const fab = document.getElementById('mobileFab');
+        
+        if (panel.classList.contains('show') && 
+            !panel.contains(e.target) && 
+            !fab.contains(e.target)) {
+            hideQuickActions();
+        }
+    });
+    
+    console.log('📱 Navegación móvil inicializada');
+</script>
 
 </div></body></html>
